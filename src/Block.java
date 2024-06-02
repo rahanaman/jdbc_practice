@@ -3,9 +3,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Block {
-	private static int BLOCK_SIZE = DBProgram.BLOCK_SIZE;
+	protected static int BLOCK_SIZE = DBProgram.BLOCK_SIZE;
 	
-	private byte[] content;
+	protected byte[] content;
 	public byte[] getContent() {
 		return content;
 	}
@@ -59,6 +59,22 @@ public class Block {
 		}
 		System.out.println("");
 	}
+	public void printDataNoln(int offset, List<AttributeMetadata> ls, int size) {
+		int index = offset*size;
+		int subindex =0;
+		for(int i = 0; i<ls.size();++i) {
+			System.out.print(new String(Arrays.copyOfRange(content, index+subindex, index+subindex+ls.get(i).GetValue()))+" ");
+			subindex+=ls.get(i).GetValue();
+		}
+	}
+	
+	
+	public void printData(List<String> data) {
+		for(int i=0;i<data.size();++i) {
+			System.out.print(data.get(i)+" ");
+		}
+		System.out.println("");
+	}
 	
 	public List<String> getData(int offset, List<AttributeMetadata> ls, int size) {
 		int index = offset*size;
@@ -70,4 +86,6 @@ public class Block {
 		}
 		return list;
 	}
+	
+	
 }

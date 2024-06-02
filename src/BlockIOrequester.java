@@ -20,7 +20,7 @@ public class BlockIOrequester {
 	
 	public void init() {
 		Block block = new Block(new byte[] {-1});
-		write(0,block.getContent());
+		write(0,block);
 		
 	}
 	
@@ -42,18 +42,6 @@ public class BlockIOrequester {
 		return null;
 	}
 	
-	public void write(int offset, byte[] input) {
-		try {
-			RandomAccessFile fout = new RandomAccessFile(file, "rw");
-			fout.seek(offset*BLOCK_SIZE);
-			fout.write(input);
-			fout.close();
-			
-		} catch(IOException e) {
-			e.printStackTrace();
-		}
-		
-	}
 	
 	public void write(int offset, Block input) {
 		byte[] string = input.getContent();

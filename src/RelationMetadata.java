@@ -14,7 +14,7 @@ public class RelationMetadata {
 		return name;
 	}
 	
-	public List<AttributeMetadata> GetAttributes(){
+	public List<AttributeMetadata> getAttributes(){
 		return attributes;
 	}
 	
@@ -34,5 +34,14 @@ public class RelationMetadata {
 	public void addAttribute(String name, int value) {
 		AttributeMetadata data = new AttributeMetadata(name, value);
 		attributes.add(data);
+	}
+	
+	public int getIndex(String attribute) {
+		for(int i=0;i<attributes.size();++i) {
+			if(attributes.get(i).GetName().equals(attribute)) {
+				return i;
+			}
+		}
+		return -1;
 	}
 }

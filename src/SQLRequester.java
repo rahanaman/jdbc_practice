@@ -122,7 +122,7 @@ public class SQLRequester {
 	public void insertMeta(RelationMetadata meta) {
 		insertRelation(meta.getName(),meta.getAttNum());
 		int num = meta.getAttNum();
-		List<AttributeMetadata> atts = meta.GetAttributes();
+		List<AttributeMetadata> atts = meta.getAttributes();
 		for(int i = 0;i<num;++i) {
 			AttributeMetadata data = atts.get(i);
 			insertAtt(meta.getName(), data.GetName(), data.GetValue(), i);

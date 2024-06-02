@@ -1,4 +1,5 @@
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -13,11 +14,20 @@ public class RelationManager {
 	private int blockingfactor;
 	private Scanner scanner = new Scanner(System.in);
 	
+	public int getBlockingfactor() {
+		return blockingfactor;
+	}
+	
+	public int getSize() {
+		return size;
+	}
+	
 	public RelationManager(RelationMetadata data) {
 		meta = data;
 		io = new BlockIOrequester(data.getName());
-		List<AttributeMetadata> ls = data.GetAttributes();
 		file = io.getFile();
+		List<AttributeMetadata> ls = data.getAttributes();
+		
 		int num = ls.size();
 		for(int i=0;i<num;++i){
 			size += ls.get(i).GetValue();
@@ -30,14 +40,21 @@ public class RelationManager {
 		insertRecord(data);
 	}
 	//select all
+	public List<List<String>> GetTable(){
+		return null;
+	}
+	
 	public void listAll() {
 		block = io.read(0);
 		if((block.getContent())[0]==(byte)-1) {
 			//no free list
 			noFreeList();
+			
 			return;
 		}
 		FreeList();
+		
+		return;
 	}
 	//delete
 	public void delete() {
@@ -49,15 +66,25 @@ public class RelationManager {
 		}
 		deleteFree(pk);
 	}
+	
+	
 	//search
-	public void search() {
+	
+	
+	public void printSearch() {
 		block = io.read(0);
 		String pk = getDelData();
 		if((block.getContent())[0] == (byte)-1){
-			searchNoFree(pk);
+			List<String> data = searchNoFree(pk);
+			if(data != null) {
+				block.printData(data);
+			}
 			return;
 		}
-		searchFree(pk);
+		List<String> data = searchFree(pk);
+		if(data != null) {
+			block.printData(data);
+		}
 	}
 	
 	
@@ -90,7 +117,7 @@ public class RelationManager {
 	}
 	
 	private boolean checkNoFree(byte[] data) {
-		String pk = new String(Arrays.copyOfRange(data, 0, meta.GetAttributes().get(0).GetValue()));
+		String pk = new String(Arrays.copyOfRange(data, 0, meta.getAttributes().get(0).GetValue()));
 		int cnt = 0;
 		int n = (int)file.length();
 		int num = n/BLOCK_SIZE;
@@ -101,7 +128,7 @@ public class RelationManager {
 					continue;
 				}
 				cnt++;
-				List<String> rec = block.getData(j, meta.GetAttributes(), size);
+				List<String> rec = block.getData(j, meta.getAttributes(), size);
 				if(rec.get(0).equals(pk)) {
 					System.out.println("ERROR : primary key alread exists.");
 					return true;
@@ -161,7 +188,7 @@ public class RelationManager {
 	}
 	
 	private boolean checkFree(byte[] data) {
-		String pk = new String(Arrays.copyOfRange(data, 0, meta.GetAttributes().get(0).GetValue()));
+		String pk = new String(Arrays.copyOfRange(data, 0, meta.getAttributes().get(0).GetValue()));
 		int offset;
 		int cnt =0;
 		int n = (int)file.length();
@@ -175,7 +202,7 @@ public class RelationManager {
 				cnt=0;
 				continue;
 			}
-			List<String> rec = block.getData(i, meta.GetAttributes(), size);
+			List<String> rec = block.getData(i, meta.getAttributes(), size);
 			if(rec.get(0).equals(pk)) {
 				System.out.println("ERROR : primary key alread exists.");
 				return true;
@@ -191,7 +218,7 @@ public class RelationManager {
 					cnt =0;
 					continue;
 				}
-				List<String> rec = block.getData(j, meta.GetAttributes(), size);
+				List<String> rec = block.getData(j, meta.getAttributes(), size);
 				if(rec.get(0).equals(pk)) {
 					System.out.println("ERROR : primary key alread exists.");
 					return true;
@@ -258,12 +285,12 @@ public class RelationManager {
 		}
 		int index =0;
 		for(int j=0;j<meta.getAttNum();++j) {
-			System.out.println((meta.GetAttributes()).get(j).GetName()+"?");
+			System.out.println((meta.getAttributes()).get(j).GetName()+"?");
 			byte[] input = (scanner.nextLine()).getBytes();
 			for(int i=0;i<input.length;++i) {
 				data[index+i] = input[i];
 			}
-			index += meta.GetAttributes().get(j).GetValue();
+			index += meta.getAttributes().get(j).GetValue();
 		}
 		
 		return data;
@@ -291,6 +318,7 @@ public class RelationManager {
 	//select all implementation
 
 	private void noFreeList() {
+		List<List<String>> list = new ArrayList<>();
 		int n = (int)file.length();
 		int num = n/BLOCK_SIZE;
 		for(int i=0;i<num;++i) {
@@ -299,17 +327,17 @@ public class RelationManager {
 				if((block.getContent())[j*size]==0||(block.getContent())[j*size]==-1) {
 					continue;
 				}
-				List<String> ls = block.getData(j, meta.GetAttributes(), size);
-				for(int ind = 0; ind<ls.size();++ind) {
-					System.out.print(ls.get(ind)+" ");
-				}
-				System.out.println("");
+				List<String> ls = block.getData(j, meta.getAttributes(), size);
+				list.add(ls);
+				block.printData(ls);
 			}
 			
 		}
+		return;
 	}
 	
 	private void FreeList() {
+		List<List<String>> list = new ArrayList<>();
 		int offset;
 		int cnt =0;
 		int n = (int)file.length();
@@ -326,11 +354,10 @@ public class RelationManager {
 			if((block.getContent())[i*size]==0||(block.getContent())[i*size]==-1) {
 				continue;
 			}
-			List<String> ls = block.getData(i, meta.GetAttributes(), size);
-			for(int ind = 0; ind<ls.size();++ind) {
-				System.out.print(ls.get(ind)+" ");
-			}
-			System.out.println("");
+			List<String> ls = block.getData(i, meta.getAttributes(), size);
+			list.add(ls);
+			block.printData(ls);
+			
 		}
 		
 		for(int i=1;i<num;++i) {
@@ -345,13 +372,13 @@ public class RelationManager {
 				if((block.getContent())[j*size]==0||(block.getContent())[j*size]==-1) {
 					continue;
 				}
-				List<String> ls = block.getData(j, meta.GetAttributes(), size);
-				for(int ind = 0; ind<ls.size();++ind) {
-					System.out.print(ls.get(ind)+" ");
-				}
-				System.out.println("");
+				List<String> ls = block.getData(j, meta.getAttributes(), size);
+				list.add(ls);
+				block.printData(ls);
 			}
 		}
+		
+		return;
 		
 		
 	}
@@ -359,7 +386,7 @@ public class RelationManager {
 	
 	//search implementation
 	
-	private void searchNoFree(String pk) {
+	private List<String> searchNoFree(String pk) {
 
 		int n = (int)file.length();
 		int num = n/BLOCK_SIZE;
@@ -369,17 +396,18 @@ public class RelationManager {
 				if((block.getContent())[j*size] == -1||(block.getContent())[j*size] == 0) {
 					continue;
 				}
-				List<String> data = block.getData(j, meta.GetAttributes(), size);
+				List<String> data = block.getData(j, meta.getAttributes(), size);
 				if(data.get(0).equals(pk)) {
-					block.printData(j, meta.GetAttributes(), size);
-					return;
+					
+					return data;
 				}
 				
 			}
 		}
+		return null;
 	}
 	
-	private void searchFree(String pk) {
+	private List<String> searchFree(String pk) {
 		int offset;
 		int cnt =0;
 		int n = (int)file.length();
@@ -393,10 +421,11 @@ public class RelationManager {
 				
 				continue;
 			}
-			List<String> data = block.getData(i, meta.GetAttributes(), size);
+			List<String> data = block.getData(i, meta.getAttributes(), size);
 			if(data.get(0).equals(pk)) {
-				block.printData(i, meta.GetAttributes(), size);
-				return;
+				//block.printData(data);
+				//block.printData(i, meta.GetAttributes(), size);
+				return data;
 			}
 		}
 		
@@ -409,13 +438,15 @@ public class RelationManager {
 					cnt =0;
 					continue;
 				}
-				List<String> data = block.getData(j, meta.GetAttributes(), size);
+				List<String> data = block.getData(j, meta.getAttributes(), size);
 				if(data.get(0).equals(pk)) {
-					block.printData(j, meta.GetAttributes(), size);
-					return;
+					//block.printData(data);
+//					block.printData(j, meta.GetAttributes(), size);
+					return data;
 				}
 			}
 		}
+		return null;
 	}
 	
 	//delete implementation
@@ -445,7 +476,7 @@ public class RelationManager {
 					continue;
 				}
 				cnt++;
-				List<String> data = block.getData(j, meta.GetAttributes(), size);
+				List<String> data = block.getData(j, meta.getAttributes(), size);
 				if(data.get(0).equals(pk)) {
 					block.write(j,size,new byte[] {(byte)0});
 					io.write(i,block);
@@ -474,7 +505,7 @@ public class RelationManager {
 				free++;
 				continue;
 			}
-			List<String> data = block.getData(i, meta.GetAttributes(), size);
+			List<String> data = block.getData(i, meta.getAttributes(), size);
 			if(data.get(0).equals(pk)) {
 				if(offset == 0) {
 					block.write(i,size,new byte[] {(byte)0});
@@ -501,7 +532,7 @@ public class RelationManager {
 					free++;
 					continue;
 				}
-				List<String> data = block.getData(j, meta.GetAttributes(), size);
+				List<String> data = block.getData(j, meta.getAttributes(), size);
 				if(data.get(0).equals(pk)) {
 					if(offset == 0) {
 						block.write(j,size,new byte[] {(byte)0});

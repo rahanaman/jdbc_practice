@@ -4,7 +4,8 @@ import java.util.Scanner;
 
 //UI and JDBC connection
 public class DBProgram {
-	public static int BLOCK_SIZE =100;
+	public static final int BLOCK_SIZE =100;
+	public static final int MOD = 5;
 	
 	private Scanner scanner = new Scanner(System.in);
 	private String input;
@@ -17,7 +18,7 @@ public class DBProgram {
 			System.out.println("====================================================");
 			System.out.println("                      DB Program");
 			System.out.println("====================================================");
-			System.out.println("1. 릴레이션 관리 2. 릴레이션 생성 및 처리 3. 종료");
+			System.out.println("1. 릴레이션 관리 2. 릴레이션 생성 및 처리 3. 조인 결과 4. 종료");
 			input = scanner.nextLine();
 			switch(input) {
 			case "1":
@@ -26,7 +27,10 @@ public class DBProgram {
 			case "2":
 				relationCnD();
 				break;
-			case "3":
+			case"3":
+				JoinMang();
+				break;
+			case "4":
 				System.out.println("Program exit.");
 				return;
 			default:
@@ -36,6 +40,63 @@ public class DBProgram {
 		}
 		
 	}
+	
+	private void JoinMang() {
+		System.out.println("====================================================");
+		System.out.println("                       Join DB");
+		System.out.println("====================================================");
+		System.out.println("조인연산을 수행할 두 개의 릴레이션을 선택하세요.");
+		List<String> ls = SQLRequester.Instance().getRelationList();
+		String input1;
+		String input2;
+		for(int i=0;i<ls.size();++i) {
+			System.out.println(i+" : "+ls.get(i));
+			
+		}
+		while(true){
+			input = scanner.nextLine();
+			try{
+				int num = Integer.parseInt(input);
+				if(num >= 0 && num < ls.size()) {
+					input1 = ls.get(num);
+					break;
+				}
+				else {
+					System.out.println("Invalid Input");
+					continue;
+				}
+			}catch (NumberFormatException e) {
+				e.printStackTrace();
+				System.out.println("Invalid Input");
+				continue;
+			}
+		}
+		while(true){
+			input = scanner.nextLine();
+			try{
+				int num = Integer.parseInt(input);
+				if(num >= 0 && num < ls.size()) {
+					input2 = ls.get(num);
+					if(input2 != input1) {
+						break;
+					}
+				}
+				else {
+					System.out.println("Invalid Input");
+					continue;
+				}
+			}catch (NumberFormatException e) {
+				e.printStackTrace();
+				System.out.println("Invalid Input");
+				continue;
+			}
+		}
+		JoinManager m = new JoinManager(input1,input2);
+		
+		
+	}
+		
+		
 	
 	//relation admin
 	
@@ -91,7 +152,7 @@ public class DBProgram {
 				manager.listAll();
 				break;
 			case "4":
-				manager.search();
+				manager.printSearch();
 				break; 
 			case "5":
 				return;
